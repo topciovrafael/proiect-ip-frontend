@@ -18,7 +18,7 @@ const DashboardPage: React.FC<Props> = ({ user }) => {
     ],
     Receptionist: [
       { label: "Adăugare pacient", to: "/add-patient" },
-      { label: "Alocare paturi\nși saloane", to: "/bed-ward-allocation" },
+      { label: "Alocare paturi\nși saloane", to: "/bed-allocation" },
     ],
     Farmacist: [
       { label: "Gestionare\nmedicamente", to: "/medication-management" },
