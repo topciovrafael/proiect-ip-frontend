@@ -5,6 +5,17 @@ import DashboardPage from "./pages/dashboard-page";
 import PatientsPage from "./pages/patients";
 import LoginPage from "./pages/login";
 
+/* placeholder pages – add real content later */
+import AddPatientPage from "./pages/add-patient";
+import BedAllocationPage from "./pages/bed-allocation";
+import MedicationPrescriptionsPage from "./pages/medication-prescriptions";
+
+import TransportHistoryPage from "./pages/transport-history";
+import RobotAlertsPage from "./pages/robot-alerts";
+import MedicationManagementPage from "./pages/medication-management";
+import PrescriptionsPrepPage from "./pages/prescriptions-prep";
+import InventoryPage from "./pages/inventory";
+
 import "./App.css";
 
 export interface User {
@@ -12,7 +23,7 @@ export interface User {
   email: string;
   nume: string;
   prenume: string;
-  rol: string;
+  rol: string; // e.g. "Medic", "Farmacist", etc.
 }
 
 function App() {
@@ -28,14 +39,50 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
 
-        {/* Protected routes */}
+        {/* Protected area */}
         <Route
           path="/"
-          element={<PrivateRoute element={<DashboardPage />} />}
+          element={<PrivateRoute element={<DashboardPage user={user!} />} />}
         />
         <Route
           path="/patients"
           element={<PrivateRoute element={<PatientsPage />} />}
+        />
+
+        {/* Doctor pages */}
+        <Route
+          path="/add-patient"
+          element={<PrivateRoute element={<AddPatientPage />} />}
+        />
+        <Route
+          path="/bed-allocation"
+          element={<PrivateRoute element={<BedAllocationPage />} />}
+        />
+        <Route
+          path="/medication-prescriptions"
+          element={<PrivateRoute element={<MedicationPrescriptionsPage />} />}
+        />
+        <Route
+          path="/transport-history"
+          element={<PrivateRoute element={<TransportHistoryPage />} />}
+        />
+        <Route
+          path="/robot-alerts"
+          element={<PrivateRoute element={<RobotAlertsPage />} />}
+        />
+
+        {/* Pharmacist pages */}
+        <Route
+          path="/medication-management"
+          element={<PrivateRoute element={<MedicationManagementPage />} />}
+        />
+        <Route
+          path="/prescriptions-prep"
+          element={<PrivateRoute element={<PrescriptionsPrepPage />} />}
+        />
+        <Route
+          path="/inventory"
+          element={<PrivateRoute element={<InventoryPage />} />}
         />
       </Routes>
     </BrowserRouter>
