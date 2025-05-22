@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove the max-width constraint */
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left; /* Change from center to left for proper alignment */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
+  /* Remove display: flex and place-items: center */
+}
+
+/* Reset default button styles to prevent conflicts with Tailwind */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  /* Remove other button styling to let Tailwind handle it */
+  border: none;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Keep link styling but make it more subtle */
+a {
+  text-decoration: none;
+}
+
+/* Preserve dark/light mode preferences but simplify */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+}
