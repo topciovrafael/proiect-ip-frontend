@@ -158,4 +158,36 @@ router.post("/login", async (req, res) => {
   }
 });
 
+/* ───────────── pacienti ──────────────────────────────────────────────── */
+// NEW 👉 POST /patients  →  insert a row
+router.post("/patients", async (req, res) => {
+  const { nume, prenume, CNP, adresa, telefon, salon, pat } = req.body;
+
+  // very bare-bones validation
+  if (!nume || !prenume || !CNP) {
+    return res.status(400).send("Missing required fields (nume, prenume, CNP)");
+  }
+
+  try {
+    await query(
+      `INSERT INTO dbo.pacienti (nume, prenume, CNP, adresa, telefon, salon, pat)
+       VALUES (@nume, @prenume, @CNP, @adresa, @telefon, @salon, @pat)`,
+      r => r
+        .input("nume",     sql.VarChar(100), nume)
+        .input("prenume",  sql.VarChar(100), prenume)
+        .input("CNP",      sql.Char(13),     CNP)
+        .input("adresa",   sql.VarChar(255), adresa ?? null)
+        .input("telefon",  sql.VarChar(20),  telefon ?? null)
+        .input("salon",    sql.VarChar(10),  salon ?? null)
+        .input("pat",      sql.VarChar(10),  pat ?? null)
+    );
+
+    res.status(201).send("Inserted");
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("DB error");
+  }
+});
+
+
 export default router;
