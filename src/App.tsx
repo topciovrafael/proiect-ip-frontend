@@ -13,7 +13,7 @@ import MedicationPrescriptionsPage from "./pages/medication-prescriptions";
 import TransportHistoryPage from "./pages/transport-history";
 import RobotAlertsPage from "./pages/robot-alerts";
 import MedicationManagementPage from "./pages/medication-management";
-import PrescriptionsPrepPage from "./pages/prescriptions-prep";
+// import PrescriptionsPrepPage from "./pages/prescriptions-prep";
 // import InventoryPage from "./pages/inventory";
 
 import "./App.css";
@@ -79,7 +79,7 @@ function App() {
         />
         <Route
           path="/prescriptions-prep"
-          element={<PrivateRoute element={<PrescriptionsPrepPage />} />}
+          element={<PrivateRoute element={<MedicationPrescriptionsPage />} />}
         />
         {/* <Route
           path="/inventory"
