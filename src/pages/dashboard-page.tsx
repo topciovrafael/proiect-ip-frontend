@@ -11,8 +11,8 @@ const DashboardPage: React.FC<Props> = ({ user }) => {
   const roleMap: Record<string, { label: string; to: string }[]> = {
     Medic: [
       { label: "Adaugă Pacient", to: "/add-patient" },
-      { label: "Alocare Paturi", to: "/bed-allocation" },
-      { label: "Medicatie\nPrescriptii", to: "/medication-prescriptions" },
+      { label: "Alocare Paturi", to: "/patients" },
+      { label: "Medicatie\nPrescriptii", to: "/prescriptions-prep" },
       { label: "Istoric Transport", to: "/transport-history" },
       { label: "Alerte Roboti", to: "/robot-alerts" },
     ],

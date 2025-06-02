@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { FileText, Loader2, Search, X, Check, Plus } from "lucide-react";
+import { FileText, Loader2, Search, X, Check, Plus, Edit } from "lucide-react";
 
 /* ─────────────── types & helpers ─────────────── */
 interface Patient {
@@ -62,6 +63,15 @@ interface NewPrescription {
   }[];
 }
 
+interface EditPrescription {
+  ID_prescriptie: number;
+  medications: {
+    ID_medicament: number;
+    doza: number; // in mg
+    frecventa: number; // in days
+  }[];
+}
+
 const MedicationPrescriptionsPage = () => {
   /* list state */
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
@@ -78,6 +88,7 @@ const MedicationPrescriptionsPage = () => {
     PrescriptionMedication[]
   >([]);
   const [add, setAdd] = useState<NewPrescription | null>(null);
+  const [edit, setEdit] = useState<EditPrescription | null>(null);
 
   /* form helpers */
   const [saving, setSaving] = useState(false);
@@ -127,6 +138,29 @@ const MedicationPrescriptionsPage = () => {
     }
   };
 
+  /* edit prescription */
+  const editPrescription = async (prescription: Prescription) => {
+    try {
+      const { data } = await axios.get<PrescriptionMedication[]>(
+        `/api/prescriptions/${prescription.ID_prescriptie}/medications`
+      );
+
+      // Convert the prescription medications to edit format
+      const editMedications = data.map((med) => ({
+        ID_medicament: med.ID_medicament,
+        doza: Number.parseInt(med.doza.replace("mg", "")),
+        frecventa: Number.parseInt(med.frecventa.replace(" zile", "")),
+      }));
+
+      setEdit({
+        ID_prescriptie: prescription.ID_prescriptie,
+        medications: editMedications,
+      });
+    } catch {
+      setError("Failed to load prescription for editing.");
+    }
+  };
+
   /* add new medication to prescription */
   const addMedicationToPrescription = () => {
     if (!add) return;
@@ -134,6 +168,22 @@ const MedicationPrescriptionsPage = () => {
       ...add,
       medications: [
         ...add.medications,
+        {
+          ID_medicament: 0,
+          doza: 100,
+          frecventa: 1,
+        },
+      ],
+    });
+  };
+
+  /* add new medication to edit prescription */
+  const addMedicationToEditPrescription = () => {
+    if (!edit) return;
+    setEdit({
+      ...edit,
+      medications: [
+        ...edit.medications,
         {
           ID_medicament: 0,
           doza: 100,
@@ -152,11 +202,19 @@ const MedicationPrescriptionsPage = () => {
     });
   };
 
+  /* remove medication from edit prescription */
+  const removeMedicationFromEditPrescription = (index: number) => {
+    if (!edit) return;
+    setEdit({
+      ...edit,
+      medications: edit.medications.filter((_, i) => i !== index),
+    });
+  };
+
   /* update medication in prescription */
   const updateMedicationInPrescription = (
     index: number,
     field: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any
   ) => {
     if (!add) return;
@@ -166,6 +224,21 @@ const MedicationPrescriptionsPage = () => {
       [field]: value,
     };
     setAdd({ ...add, medications: updatedMedications });
+  };
+
+  /* update medication in edit prescription */
+  const updateMedicationInEditPrescription = (
+    index: number,
+    field: string,
+    value: any
+  ) => {
+    if (!edit) return;
+    const updatedMedications = [...edit.medications];
+    updatedMedications[index] = {
+      ...updatedMedications[index],
+      [field]: value,
+    };
+    setEdit({ ...edit, medications: updatedMedications });
   };
 
   /* save prescription */
@@ -204,7 +277,58 @@ const MedicationPrescriptionsPage = () => {
     } catch (error) {
       console.error("Error saving prescription:", error);
       if (axios.isAxiosError(error) && error.response) {
-        // If we have a specific error message from the server
+        setFieldErr({ global: `Error: ${error.response.data}` });
+      } else {
+        setFieldErr({ global: "Eroare la salvare – încercați din nou." });
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /* save edit prescription */
+  const saveEditPrescription = async () => {
+    if (!edit) return;
+    const errs: Record<string, string> = {};
+
+    if (!edit.medications.length)
+      errs.medications = "Adăugați cel puțin un medicament";
+
+    edit.medications.forEach((med, index) => {
+      if (!med.ID_medicament)
+        errs[`med_${index}_id`] = "Selectați medicamentul";
+      if (med.doza < 100 || med.doza > 1000)
+        errs[`med_${index}_doza`] = "Doza trebuie să fie între 100-1000mg";
+      if (med.frecventa < 1 || med.frecventa > 30)
+        errs[`med_${index}_frecventa`] =
+          "Frecvența trebuie să fie între 1-30 zile";
+    });
+
+    setFieldErr(errs);
+    if (Object.keys(errs).length) return;
+
+    setSaving(true);
+    try {
+      console.log("Sending edit prescription data:", edit);
+      const response = await axios.put(
+        `/api/prescriptions/${edit.ID_prescriptie}`,
+        {
+          medications: edit.medications,
+        }
+      );
+      console.log("Edit prescription response:", response.data);
+
+      // Refresh prescriptions list and medications list (stock might have changed)
+      const [prescriptionsRes, medicationsRes] = await Promise.all([
+        axios.get<Prescription[]>("/api/prescriptions"),
+        axios.get<Medication[]>("/api/medicamente"),
+      ]);
+      setPrescriptions(prescriptionsRes.data);
+      setMedications(medicationsRes.data);
+      setEdit(null);
+    } catch (error) {
+      console.error("Error updating prescription:", error);
+      if (axios.isAxiosError(error) && error.response) {
         setFieldErr({ global: `Error: ${error.response.data}` });
       } else {
         setFieldErr({ global: "Eroare la salvare – încercați din nou." });
@@ -286,6 +410,13 @@ const MedicationPrescriptionsPage = () => {
                         className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
                       >
                         <FileText className="h-4 w-4" />
+                      </button>
+                      <button
+                        title="Edit"
+                        onClick={() => editPrescription(p)}
+                        className="ml-2 rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                      >
+                        <Edit className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>
@@ -606,6 +737,197 @@ const MedicationPrescriptionsPage = () => {
                 ) : (
                   <>
                     <Check className="h-4 w-4" /> Salvează prescripția
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ───────── edit prescription modal ───────── */}
+      {edit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-4xl rounded-lg bg-gray-900 p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold">
+                Editează prescripția #{edit.ID_prescriptie}
+              </h2>
+              <button
+                onClick={() => setEdit(null)}
+                className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Medications */}
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Medicamente</h3>
+                  <button
+                    onClick={addMedicationToEditPrescription}
+                    className="inline-flex items-center gap-2 rounded bg-green-600 px-3 py-1 text-sm hover:bg-green-700"
+                  >
+                    <Plus className="h-4 w-4" /> Adaugă medicament
+                  </button>
+                </div>
+
+                {fieldErr.medications && (
+                  <p className="mb-4 text-red-500">{fieldErr.medications}</p>
+                )}
+
+                <div className="space-y-4">
+                  {edit.medications.map((med, index) => (
+                    <div
+                      key={index}
+                      className="rounded border border-gray-700 bg-gray-800 p-4"
+                    >
+                      <div className="mb-4 flex items-center justify-between">
+                        <h4 className="font-medium">Medicament #{index + 1}</h4>
+                        <button
+                          onClick={() =>
+                            removeMedicationFromEditPrescription(index)
+                          }
+                          className="rounded p-1 text-red-400 hover:bg-gray-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <div>
+                          <label className="block text-sm text-gray-400">
+                            Medicament <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            className={`w-full rounded border ${
+                              fieldErr[`med_${index}_id`]
+                                ? "border-red-500"
+                                : "border-gray-700"
+                            } bg-gray-700 p-2`}
+                            value={med.ID_medicament}
+                            onChange={(e) =>
+                              updateMedicationInEditPrescription(
+                                index,
+                                "ID_medicament",
+                                +e.target.value
+                              )
+                            }
+                          >
+                            <option value={0}>Selectați medicamentul</option>
+                            {medications.map((medication) => (
+                              <option
+                                key={medication.ID_medicament}
+                                value={medication.ID_medicament}
+                              >
+                                {medication.denumire} (Stoc:{" "}
+                                {medication.stoc_curent})
+                              </option>
+                            ))}
+                          </select>
+                          {fieldErr[`med_${index}_id`] && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {fieldErr[`med_${index}_id`]}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm text-gray-400">
+                            Doză (mg) <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="100"
+                            max="1000"
+                            className={`w-full rounded border ${
+                              fieldErr[`med_${index}_doza`]
+                                ? "border-red-500"
+                                : "border-gray-700"
+                            } bg-gray-700 p-2`}
+                            value={med.doza}
+                            onChange={(e) =>
+                              updateMedicationInEditPrescription(
+                                index,
+                                "doza",
+                                +e.target.value
+                              )
+                            }
+                          />
+                          <p className="mt-1 text-xs text-gray-500">
+                            100-1000mg
+                          </p>
+                          {fieldErr[`med_${index}_doza`] && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {fieldErr[`med_${index}_doza`]}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm text-gray-400">
+                            Frecvență (zile){" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="30"
+                            className={`w-full rounded border ${
+                              fieldErr[`med_${index}_frecventa`]
+                                ? "border-red-500"
+                                : "border-gray-700"
+                            } bg-gray-700 p-2`}
+                            value={med.frecventa}
+                            onChange={(e) =>
+                              updateMedicationInEditPrescription(
+                                index,
+                                "frecventa",
+                                +e.target.value
+                              )
+                            }
+                          />
+                          <p className="mt-1 text-xs text-gray-500">
+                            1-30 zile
+                          </p>
+                          {fieldErr[`med_${index}_frecventa`] && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {fieldErr[`med_${index}_frecventa`]}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {fieldErr.global && (
+                <p className="text-red-500">{fieldErr.global}</p>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setEdit(null)}
+                className="rounded border border-gray-700 bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700"
+              >
+                Anulează
+              </button>
+              <button
+                disabled={saving}
+                onClick={saveEditPrescription}
+                className="inline-flex items-center gap-2 rounded bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-70"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Se salvează...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" /> Salvează modificările
                   </>
                 )}
               </button>

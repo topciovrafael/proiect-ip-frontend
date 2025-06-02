@@ -434,6 +434,119 @@ router.post("/prescriptions", async (req, res) => {
   }
 })
 
+/* update prescription with stock recalculation */
+router.put("/prescriptions/:id", async (req, res) => {
+  const prescriptionId = +req.params.id
+  const { medications } = req.body
+
+  if (!medications || !medications.length) {
+    return res.status(400).send("medications sunt obligatorii")
+  }
+
+  // Validate medications
+  for (const med of medications) {
+    if (!med.ID_medicament || med.doza < 100 || med.doza > 1000 || med.frecventa < 1 || med.frecventa > 30) {
+      return res.status(400).send("Datele medicamentelor sunt invalide")
+    }
+  }
+
+  try {
+    console.log(`Updating prescription ${prescriptionId} with data:`, JSON.stringify(medications, null, 2))
+
+    // 1. Get current prescription medications
+    const currentMedications = await query(
+      `SELECT pm.ID_medicament, pm.doza, pm.frecventa
+       FROM dbo.prescriptii_medicamente pm
+       WHERE pm.ID_prescriptie = @prescriptionId`,
+      (r) => r.input("prescriptionId", sql.Int, prescriptionId),
+    )
+
+    console.log("Current medications:", currentMedications)
+
+    // 2. Calculate stock adjustments for each medication
+    for (const newMed of medications) {
+      const currentMed = currentMedications.find((cm) => cm.ID_medicament === newMed.ID_medicament)
+
+      if (currentMed) {
+        // Parse current values (remove "mg" and "zile" suffixes)
+        const currentDoza = Number.parseInt(currentMed.doza.replace("mg", ""))
+        const currentFrecventa = Number.parseInt(currentMed.frecventa.replace(" zile", ""))
+
+        // Calculate old and new total dosages
+        const oldTotalDosageMg = currentDoza * currentFrecventa
+        const newTotalDosageMg = newMed.doza * newMed.frecventa
+
+        // Calculate old and new stock usage
+        const oldStockUsage = Math.ceil(oldTotalDosageMg / 1000 / 5)
+        const newStockUsage = Math.ceil(newTotalDosageMg / 1000 / 5)
+
+        // Calculate stock difference (positive = need more stock, negative = return stock)
+        const stockDifference = newStockUsage - oldStockUsage
+
+        console.log(
+          `Medication ${newMed.ID_medicament}: old=${oldTotalDosageMg}mg (${oldStockUsage} stock), new=${newTotalDosageMg}mg (${newStockUsage} stock), difference=${stockDifference}`,
+        )
+
+        if (stockDifference > 0) {
+          // Need more stock - check availability
+          const stockCheck = await query(
+            `SELECT stoc_curent FROM dbo.medicamente WHERE ID_medicament = @ID_medicament`,
+            (r) => r.input("ID_medicament", sql.Int, newMed.ID_medicament),
+          )
+
+          if (!stockCheck.length) {
+            return res.status(404).send(`Medicamentul cu ID ${newMed.ID_medicament} nu există`)
+          }
+
+          const currentStock = stockCheck[0].stoc_curent
+          if (currentStock < stockDifference) {
+            return res
+              .status(400)
+              .send(
+                `Stoc insuficient pentru medicamentul cu ID ${newMed.ID_medicament}. Disponibil: ${currentStock}, Necesar suplimentar: ${stockDifference}`,
+              )
+          }
+        }
+
+        // Update stock (subtract if positive difference, add if negative)
+        if (stockDifference !== 0) {
+          console.log(
+            `Updating stock for medication ${newMed.ID_medicament}: ${stockDifference > 0 ? "subtracting" : "adding"} ${Math.abs(stockDifference)}`,
+          )
+          await query(
+            `UPDATE dbo.medicamente 
+             SET stoc_curent = stoc_curent - @stockDifference
+             WHERE ID_medicament = @ID_medicament`,
+            (r) =>
+              r
+                .input("ID_medicament", sql.Int, newMed.ID_medicament)
+                .input("stockDifference", sql.Int, stockDifference),
+          )
+        }
+
+        // Update prescription medication
+        await query(
+          `UPDATE dbo.prescriptii_medicamente 
+           SET doza = @doza, frecventa = @frecventa
+           WHERE ID_prescriptie = @prescriptionId AND ID_medicament = @ID_medicament`,
+          (r) =>
+            r
+              .input("prescriptionId", sql.Int, prescriptionId)
+              .input("ID_medicament", sql.Int, newMed.ID_medicament)
+              .input("doza", sql.VarChar(50), `${newMed.doza}mg`)
+              .input("frecventa", sql.VarChar(50), `${newMed.frecventa} zile`),
+        )
+      }
+    }
+
+    console.log(`Prescription ${prescriptionId} updated successfully`)
+    res.status(200).json({ success: true })
+  } catch (e) {
+    console.error("Error updating prescription:", e)
+    res.status(500).send(e.message || "DB error")
+  }
+})
+
 router.get("/patients/:id/prescriptions", async (req, res) => {
   const id = +req.params.id
   try {
