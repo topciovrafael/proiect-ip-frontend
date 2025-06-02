@@ -43,6 +43,41 @@ router.post("/utilizatori", async (req, res) => {
   }
 })
 
+
+/* ─────────────── ISTORIC TRANSPORTURI ─────────────── */
+
+/* get all transport history */
+router.get("/istoric-transporturi", async (_req, res) => {
+  try {
+    const rows = await query(`
+      SELECT ID_transport, ID_medicament, data_ora, status, ID_pacient
+        FROM dbo.istoric_transporturi
+       ORDER BY data_ora DESC`)
+    res.json(rows)
+  } catch (e) {
+    console.error(e)
+    res.status(500).send("DB error")
+  }
+})
+
+/* get transport history by ID */
+router.get("/istoric-transporturi/:id", async (req, res) => {
+  const id = +req.params.id
+  try {
+    const rows = await query(
+      `SELECT ID_transport, ID_medicament, data_ora, status, ID_pacient
+         FROM dbo.istoric_transporturi
+        WHERE ID_transport = @id`,
+      (r) => r.input("id", sql.Int, id),
+    )
+    if (!rows.length) return res.status(404).send("Not found")
+    res.json(rows[0])
+  } catch (e) {
+    console.error(e)
+    res.status(500).send("DB error")
+  }
+})
+
 /* update user */
 router.put("/utilizatori/:id", async (req, res) => {
   const id = +req.params.id
