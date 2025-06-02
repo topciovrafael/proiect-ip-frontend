@@ -60,6 +60,68 @@ router.get("/istoric-transporturi", async (_req, res) => {
   }
 })
 
+
+/* ─────────────── HARTA SPITAL ─────────────── */
+
+/* get hospital map */
+router.get("/harta-spital", async (_req, res) => {
+  try {
+    const rows = await query(`
+      SELECT nr1, nr2
+        FROM dbo.harta_spital`)
+    res.json(rows)
+  } catch (e) {
+    console.error(e)
+    res.status(500).send("DB error")
+  }
+})
+
+/* update hospital map */
+router.put("/harta-spital", async (req, res) => {
+  const { nr1, nr2 } = req.body
+
+  if (!nr1 || !nr2) {
+    return res.status(400).send("nr1 și nr2 sunt obligatorii")
+  }
+
+  // Validate that nr1 and nr2 are 128-character binary strings
+  if (nr1.length !== 128 || nr2.length !== 128) {
+    return res.status(400).send("nr1 și nr2 trebuie să aibă exact 128 de caractere")
+  }
+
+  if (!/^[01]+$/.test(nr1) || !/^[01]+$/.test(nr2)) {
+    return res.status(400).send("nr1 și nr2 trebuie să conțină doar 0 și 1")
+  }
+
+  try {
+    // Check if record exists
+    const existingRows = await query(`SELECT COUNT(*) as count FROM dbo.harta_spital`)
+    
+    if (existingRows[0].count > 0) {
+      // Update existing record
+      await query(
+        `UPDATE dbo.harta_spital SET nr1 = @nr1, nr2 = @nr2`,
+        (r) => r
+          .input("nr1", sql.VarChar(128), nr1)
+          .input("nr2", sql.VarChar(128), nr2)
+      )
+    } else {
+      // Insert new record
+      await query(
+        `INSERT INTO dbo.harta_spital (nr1, nr2) VALUES (@nr1, @nr2)`,
+        (r) => r
+          .input("nr1", sql.VarChar(128), nr1)
+          .input("nr2", sql.VarChar(128), nr2)
+      )
+    }
+
+    res.sendStatus(204)
+  } catch (e) {
+    console.error(e)
+    res.status(500).send("DB error")
+  }
+})
+
 /* get transport history by ID */
 router.get("/istoric-transporturi/:id", async (req, res) => {
   const id = +req.params.id
