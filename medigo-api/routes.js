@@ -8,6 +8,130 @@ const router = Router()
 /* turn "", undefined, null, 123  ⇒  null | trimmed string */
 const sqlValue = (v) => (v === undefined || v === null || v === "" ? null : String(v).trim())
 
+//admin
+ 
+/* ─────────────── USER MANAGEMENT ROUTES ─────────────── */
+
+/* create user */
+router.post("/utilizatori", async (req, res) => {
+  const { nume, prenume, rol, username, email, parola, status } = req.body
+
+  if (!nume || !prenume || !username || !email || !parola) {
+    return res.status(400).send("nume, prenume, username, email și parola sunt obligatorii")
+  }
+
+  try {
+    await query(
+      `INSERT INTO dbo.utilizatori
+         (nume, prenume, rol, username, email, parola, status)
+       VALUES
+         (@nume, @prenume, @rol, @username, @email, @parola, @status)`,
+      (r) =>
+        r
+          .input("nume", sql.VarChar(100), nume)
+          .input("prenume", sql.VarChar(100), prenume)
+          .input("rol", sql.VarChar(50), rol || "Receptionist")
+          .input("username", sql.VarChar(50), username)
+          .input("email", sql.VarChar(100), email)
+          .input("parola", sql.VarChar(100), parola)
+          .input("status", sql.VarChar(20), status || "activ"),
+    )
+    res.status(201).send("Inserted")
+  } catch (e) {
+    console.error(e)
+    res.status(500).send("DB error")
+  }
+})
+
+/* update user */
+router.put("/utilizatori/:id", async (req, res) => {
+  const id = +req.params.id
+  const { nume, prenume, rol, username, email, parola, status } = req.body
+
+  if (!nume || !prenume || !username || !email) {
+    return res.status(400).send("nume, prenume, username și email sunt obligatorii")
+  }
+
+  try {
+    // If password is provided, update it too, otherwise keep the existing one
+    if (parola) {
+      await query(
+        `UPDATE dbo.utilizatori
+            SET nume     = @nume,
+                prenume  = @prenume,
+                rol      = @rol,
+                username = @username,
+                email    = @email,
+                parola   = @parola,
+                status   = @status
+          WHERE ID_utilizator = @id`,
+        (r) =>
+          r
+            .input("id", sql.Int, id)
+            .input("nume", sql.VarChar(100), nume)
+            .input("prenume", sql.VarChar(100), prenume)
+            .input("rol", sql.VarChar(50), rol)
+            .input("username", sql.VarChar(50), username)
+            .input("email", sql.VarChar(100), email)
+            .input("parola", sql.VarChar(100), parola)
+            .input("status", sql.VarChar(20), status),
+      )
+    } else {
+      await query(
+        `UPDATE dbo.utilizatori
+            SET nume     = @nume,
+                prenume  = @prenume,
+                rol      = @rol,
+                username = @username,
+                email    = @email,
+                status   = @status
+          WHERE ID_utilizator = @id`,
+        (r) =>
+          r
+            .input("id", sql.Int, id)
+            .input("nume", sql.VarChar(100), nume)
+            .input("prenume", sql.VarChar(100), prenume)
+            .input("rol", sql.VarChar(50), rol)
+            .input("username", sql.VarChar(50), username)
+            .input("email", sql.VarChar(100), email)
+            .input("status", sql.VarChar(20), status),
+      )
+    }
+
+    res.sendStatus(204)
+  } catch (e) {
+    console.error(e)
+    res.status(500).send("DB error")
+  }
+})
+
+/* delete user */
+router.delete("/utilizatori/:id", async (req, res) => {
+  const id = +req.params.id
+
+  try {
+    // Check if user exists
+    const userCheck = await query(
+      `SELECT COUNT(*) as count
+         FROM dbo.utilizatori
+        WHERE ID_utilizator = @id`,
+      (r) => r.input("id", sql.Int, id),
+    )
+
+    if (userCheck[0].count === 0) {
+      return res.status(404).send("User not found")
+    }
+
+    // Delete user
+    await query(`DELETE FROM dbo.utilizatori WHERE ID_utilizator = @id`, (r) => r.input("id", sql.Int, id))
+
+    res.sendStatus(204)
+  } catch (e) {
+    console.error(e)
+    res.status(500).send("DB error")
+  }
+})
+
 
 // alarme
 

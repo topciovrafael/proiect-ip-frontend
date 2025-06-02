@@ -17,6 +17,8 @@ import MedicationManagementPage from "./pages/medication-management";
 // import InventoryPage from "./pages/inventory";
 
 import "./App.css";
+import UserAdministration from "./pages/user-administration";
+import HospitalMap from "./pages/hospital-map";
 
 export interface User {
   id: number;
@@ -85,6 +87,15 @@ function App() {
           path="/inventory"
           element={<PrivateRoute element={<InventoryPage />} />}
         /> */}
+
+        <Route
+          path="/user-administration"
+          element={<PrivateRoute element={<UserAdministration />} />}
+        />
+        <Route
+          path="/hospital-map"
+          element={<PrivateRoute element={<HospitalMap />} />}
+        />
       </Routes>
     </BrowserRouter>
   );
