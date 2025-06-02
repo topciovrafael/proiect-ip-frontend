@@ -8,6 +8,19 @@ const router = Router()
 /* turn "", undefined, null, 123  ⇒  null | trimmed string */
 const sqlValue = (v) => (v === undefined || v === null || v === "" ? null : String(v).trim())
 
+
+// alarme
+
+router.get("/alarme", async (req, res) => {
+  try {
+const rows = await query(`SELECT * from dbo.alarme`)
+    res.json(rows)
+  } catch (error) {
+    console.error("Error fetching alarme:", error);
+    res.status(500).send("Error fetching alarme data");
+  }
+});
+
 /* ─────────────── PACIENȚI ─────────────── */
 
 /* all patients */
