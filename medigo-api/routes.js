@@ -237,4 +237,39 @@ router.post("/login", async (req, res) => {
   }
 });
 
+/**
+ * Primită de robot când o comandă dă eroare.
+ * Body JSON: { idComanda: 123, descriere?: "mesaj opţional" }
+ */
+router.post("/robot/error", async (req, res) => {
+  // 1) Citim doar descrierea, nu mai căutăm idComanda
+  const descriere = sqlValue(req.body.descriere);
+
+  try {
+    // 2) Inserăm în tabela 'alarme' cu ID_comanda = 1, indiferent ce trimite clientul
+    await query(
+      `
+      INSERT INTO dbo.alarme
+             (tip_alarma, descriere, data_ora, status, ID_comanda)
+      VALUES
+             ('EROARE_ROBOT', @descriere, SYSDATETIME(), 'noua', 1)
+      `,
+      (r) =>
+        r
+          .input(
+            "descriere",
+            sql.VarChar(255),
+            descriere ?? "Eroare standard robot"
+          )
+    );
+
+    return res.status(201).send("Alarmă înregistrată");
+  } catch (e) {
+    console.error(">>> [POST /robot/error] DB error:", e);
+    return res.status(500).send("DB error");
+  }
+});
+
+
+
 export default router;
