@@ -7,14 +7,14 @@ import LoginPage from "./pages/login";
 
 /* placeholder pages – add real content later */
 import AddPatientPage from "./pages/add-patient";
-import BedAllocationPage from "./pages/bed-allocation";
+// import BedAllocationPage from "./pages/bed-allocation";
 import MedicationPrescriptionsPage from "./pages/medication-prescriptions";
 
 import TransportHistoryPage from "./pages/transport-history";
 import RobotAlertsPage from "./pages/robot-alerts";
 import MedicationManagementPage from "./pages/medication-management";
 import PrescriptionsPrepPage from "./pages/prescriptions-prep";
-import InventoryPage from "./pages/inventory";
+// import InventoryPage from "./pages/inventory";
 
 import "./App.css";
 
@@ -56,7 +56,8 @@ function App() {
         />
         <Route
           path="/bed-allocation"
-          element={<PrivateRoute element={<BedAllocationPage />} />}
+          // momentan
+          element={<PrivateRoute element={<PatientsPage />} />}
         />
         <Route
           path="/medication-prescriptions"
@@ -80,10 +81,10 @@ function App() {
           path="/prescriptions-prep"
           element={<PrivateRoute element={<PrescriptionsPrepPage />} />}
         />
-        <Route
+        {/* <Route
           path="/inventory"
           element={<PrivateRoute element={<InventoryPage />} />}
-        />
+        /> */}
       </Routes>
     </BrowserRouter>
   );

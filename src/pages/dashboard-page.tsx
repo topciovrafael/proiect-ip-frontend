@@ -23,7 +23,7 @@ const DashboardPage: React.FC<Props> = ({ user }) => {
     Farmacist: [
       { label: "Gestionare\nmedicamente", to: "/medication-management" },
       { label: "Prescripții și\npregătire comenzi", to: "/prescriptions-prep" },
-      { label: "Stocuri", to: "/inventory" },
+      // { label: "Stocuri", to: "/inventory" },
     ],
     Administrator: [
       { label: "Administrare\nutilizatori", to: "/user-administration" },
