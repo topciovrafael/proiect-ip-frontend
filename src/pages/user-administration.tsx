@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
 import {
   Search,
@@ -28,19 +27,17 @@ interface User {
 }
 
 const UserAdministration = () => {
-  // State for users list and operations
+  /* ────────── state ────────── */
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
-  // State for user operations
   const [addUser, setAddUser] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Form state
   const [formData, setFormData] = useState<Partial<User>>({
     nume: "",
     prenume: "",
@@ -53,24 +50,31 @@ const UserAdministration = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-  // Fetch users on component mount
+  /* ────────── helpers ────────── */
+  const resetForm = () =>
+    setFormData({
+      nume: "",
+      prenume: "",
+      rol: "Receptionist",
+      username: "",
+      email: "",
+      parola: "",
+      status: "Activ",
+    });
+
+  /* ────────── fetch users on mount ────────── */
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  // Fetch users from API
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await fetch("/api/utilizatori");
-
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setUsers(data);
+      setUsers(await response.json());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch users");
       console.error("Error fetching users:", err);
@@ -79,31 +83,28 @@ const UserAdministration = () => {
     }
   };
 
-  // Filter users based on search term
-  const filteredUsers = users.filter((user) =>
-    `${user.nume} ${user.prenume} ${user.email} ${user.username} ${user.rol}`
+  /* ────────── handlers ────────── */
+  const filteredUsers = users.filter((u) =>
+    `${u.nume} ${u.prenume} ${u.email} ${u.username} ${u.rol}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
 
-  // Handle form input changes
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear error for this field if it exists
     if (formErrors[name]) {
       setFormErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
+        const next = { ...prev };
+        delete next[name];
+        return next;
       });
     }
   };
 
-  // Validate form data
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
@@ -124,37 +125,23 @@ const UserAdministration = () => {
     return errors;
   };
 
-  // Handle create user
+  /* ────────── create user ────────── */
   const handleCreateUser = async () => {
     const errors = validateForm();
     setFormErrors(errors);
-
-    if (Object.keys(errors).length > 0) return;
+    if (Object.keys(errors).length) return;
 
     setSaving(true);
     try {
-      const response = await fetch("/api/utilizatori", {
+      const resp = await fetch("/api/utilizatori", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Failed to create user");
-      }
-
+      if (!resp.ok) throw new Error(await resp.text());
       await fetchUsers();
       setAddUser(false);
-      setFormData({
-        nume: "",
-        prenume: "",
-        rol: "Receptionist",
-        username: "",
-        email: "",
-        parola: "",
-        status: "Activ",
-      });
+      resetForm();
     } catch (err) {
       setFormErrors({
         submit: err instanceof Error ? err.message : "Failed to create user",
@@ -165,39 +152,29 @@ const UserAdministration = () => {
     }
   };
 
-  // Handle update user
+  /* ────────── update user ────────── */
   const handleUpdateUser = async () => {
     if (!editUser) return;
 
     const errors = validateForm();
     setFormErrors(errors);
+    if (Object.keys(errors).length) return;
 
-    if (Object.keys(errors).length > 0) return;
+    /*  Don’t overwrite with an empty password:  */
+    const payload: Partial<User> = { ...formData };
+    if (!payload.parola?.trim()) delete payload.parola;
 
     setSaving(true);
     try {
-      const response = await fetch(`/api/utilizatori/${editUser.id}`, {
+      const resp = await fetch(`/api/utilizatori/${editUser.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Failed to update user");
-      }
-
+      if (!resp.ok) throw new Error(await resp.text());
       await fetchUsers();
       setEditUser(null);
-      setFormData({
-        nume: "",
-        prenume: "",
-        rol: "Receptionist",
-        username: "",
-        email: "",
-        parola: "",
-        status: "Activ",
-      });
+      resetForm();
     } catch (err) {
       setFormErrors({
         submit: err instanceof Error ? err.message : "Failed to update user",
@@ -208,18 +185,11 @@ const UserAdministration = () => {
     }
   };
 
-  // Handle delete user
+  /* ────────── delete user ────────── */
   const handleDeleteUser = async (id: number) => {
     try {
-      const response = await fetch(`/api/utilizatori/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Failed to delete user");
-      }
-
+      const resp = await fetch(`/api/utilizatori/${id}`, { method: "DELETE" });
+      if (!resp.ok) throw new Error(await resp.text());
       await fetchUsers();
       setDeleteConfirm(null);
     } catch (err) {
@@ -228,20 +198,20 @@ const UserAdministration = () => {
     }
   };
 
-  // Start editing a user
-  const startEditUser = (user: User) => {
-    setEditUser(user);
+  const startEditUser = (u: User) => {
+    setEditUser(u);
     setFormData({
-      nume: user.nume,
-      prenume: user.prenume,
-      rol: user.rol,
-      username: user.username,
-      email: user.email,
-      parola: "", // Don't populate password for security
-      status: user.status,
+      nume: u.nume,
+      prenume: u.prenume,
+      rol: u.rol,
+      username: u.username,
+      email: u.email,
+      parola: "",
+      status: u.status,
     });
   };
 
+  /* ────────── JSX (all styles unchanged) ────────── */
   return (
     <div className="min-h-screen bg-gray-50 p-6 text-gray-900">
       <h1 className="mb-6 text-2xl font-bold">Administrare Utilizatori</h1>
@@ -303,52 +273,52 @@ const UserAdministration = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 font-medium">{user.id}</td>
+                {filteredUsers.map((u) => (
+                  <tr key={u.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-3 font-medium">{u.id}</td>
                     <td className="px-6 py-3">
-                      {user.nume} {user.prenume}
+                      {u.nume} {u.prenume}
                     </td>
-                    <td className="px-6 py-3">{user.username}</td>
-                    <td className="px-6 py-3">{user.email}</td>
+                    <td className="px-6 py-3">{u.username}</td>
+                    <td className="px-6 py-3">{u.email}</td>
                     <td className="px-6 py-3">
                       <span
                         className={`inline-block rounded-full px-2 py-1 text-xs ${
-                          user.rol === "Administrator"
+                          u.rol === "Administrator"
                             ? "bg-purple-100 text-purple-800"
-                            : user.rol === "Medic"
+                            : u.rol === "Medic"
                             ? "bg-blue-100 text-blue-800"
-                            : user.rol === "Farmacist"
+                            : u.rol === "Farmacist"
                             ? "bg-green-100 text-green-800"
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {user.rol}
+                        {u.rol}
                       </span>
                     </td>
                     <td className="px-6 py-3">
                       <span
                         className={`inline-block rounded-full px-2 py-1 text-xs ${
-                          user.status === "activ"
+                          u.status === "activ"
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {user.status}
+                        {u.status}
                       </span>
                     </td>
                     <td className="px-6 py-3">
                       <div className="flex items-center space-x-2">
                         <button
                           title="Edit"
-                          onClick={() => startEditUser(user)}
+                          onClick={() => startEditUser(u)}
                           className="rounded p-1 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
                           title="Delete"
-                          onClick={() => setDeleteConfirm(user.id)}
+                          onClick={() => setDeleteConfirm(u.id)}
                           className="rounded p-1 text-gray-600 hover:bg-gray-200 hover:text-red-600"
                         >
                           <Trash2 className="h-4 w-4" />

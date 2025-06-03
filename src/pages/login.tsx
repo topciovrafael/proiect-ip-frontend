@@ -13,24 +13,24 @@ interface Props {
 
 const LoginPage: React.FC<Props> = ({ onLogin }) => {
   const [email, setEmail] = useState("");
-  const [password, setPass] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
+    setLoading(true);
+
     try {
       const { data } = await axios.post("/api/login", { email, password });
       onLogin(data.user);
       navigate("/");
-    } catch (err) {
-      console.error(err);
+    } catch {
       setError("Email/utilizator sau parolă incorecte");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -54,6 +54,7 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
             </div>
 
             <form onSubmit={submit} className="space-y-6">
+              {/* Email / Username */}
               <div className="space-y-2">
                 <label
                   htmlFor="email"
@@ -77,6 +78,7 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
                 </div>
               </div>
 
+              {/* Password */}
               <div className="space-y-2">
                 <label
                   htmlFor="password"
@@ -93,7 +95,7 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
                     type="password"
                     value={password}
                     required
-                    onChange={(e) => setPass(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-500"
                     placeholder="••••••••"
                   />
@@ -109,11 +111,11 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-black bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-500 transition-colors duration-200 disabled:opacity-70 disabled:hover:bg-blue-500 gap-2"
+                  disabled={loading}
+                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-black bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-500 transition-colors duration-200 disabled:opacity-70 gap-2"
                 >
-                  {isLoading ? (
-                    <span className="flex items-center">
+                  {loading ? (
+                    <>
                       <svg
                         className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                         xmlns="http://www.w3.org/2000/svg"
@@ -127,15 +129,15 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
                           r="10"
                           stroke="currentColor"
                           strokeWidth="4"
-                        ></circle>
+                        />
                         <path
                           className="opacity-75"
                           fill="currentColor"
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
+                        />
                       </svg>
                       Se procesează...
-                    </span>
+                    </>
                   ) : (
                     <>
                       <LogInIcon className="h-4 w-4" />

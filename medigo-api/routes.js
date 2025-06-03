@@ -2,6 +2,9 @@
 import { Router } from "express"
 import sql from "mssql"
 import { query } from "./db.js"
+import bcrypt from "bcrypt";  
+
+const SALT_ROUNDS = 12;  
 
 const router = Router()
 
@@ -12,15 +15,19 @@ const sqlValue = (v) => (v === undefined || v === null || v === "" ? null : Stri
  
 /* ─────────────── USER MANAGEMENT ROUTES ─────────────── */
 
-/* create user */
+/* ───────────────────────────────  CREATE USER  ────────────────────────────── */
 router.post("/utilizatori", async (req, res) => {
-  const { nume, prenume, rol, username, email, parola, status } = req.body
+  const { nume, prenume, rol, username, email, parola, status } = req.body;
 
   if (!nume || !prenume || !username || !email || !parola) {
-    return res.status(400).send("nume, prenume, username, email și parola sunt obligatorii")
+    return res
+      .status(400)
+      .send("nume, prenume, username, email și parola sunt obligatorii");
   }
 
   try {
+    const hash = await bcrypt.hash(parola.trim(), SALT_ROUNDS);
+
     await query(
       `INSERT INTO dbo.utilizatori
          (nume, prenume, rol, username, email, parola, status)
@@ -33,15 +40,16 @@ router.post("/utilizatori", async (req, res) => {
           .input("rol", sql.VarChar(50), rol || "Receptionist")
           .input("username", sql.VarChar(50), username)
           .input("email", sql.VarChar(100), email)
-          .input("parola", sql.VarChar(100), parola)
+          .input("parola", sql.VarChar(255), hash)          // ← store bcrypt
           .input("status", sql.VarChar(20), status || "activ"),
-    )
-    res.status(201).send("Inserted")
+    );
+
+    res.status(201).send("Inserted");
   } catch (e) {
-    console.error(e)
-    res.status(500).send("DB error")
+    console.error(e);
+    res.status(500).send("DB error");
   }
-})
+});
 
 
 /* ─────────────── ISTORIC TRANSPORTURI ─────────────── */
@@ -140,18 +148,22 @@ router.get("/istoric-transporturi/:id", async (req, res) => {
   }
 })
 
-/* update user */
+/* ───────────────────────────────  UPDATE USER  ────────────────────────────── */
 router.put("/utilizatori/:id", async (req, res) => {
-  const id = +req.params.id
-  const { nume, prenume, rol, username, email, parola, status } = req.body
+  const id = +req.params.id;
+  const { nume, prenume, rol, username, email, parola, status } = req.body;
 
   if (!nume || !prenume || !username || !email) {
-    return res.status(400).send("nume, prenume, username și email sunt obligatorii")
+    return res
+      .status(400)
+      .send("nume, prenume, username și email sunt obligatorii");
   }
 
   try {
-    // If password is provided, update it too, otherwise keep the existing one
+    // Decide SQL based on whether a new password was supplied
     if (parola) {
+      const hash = await bcrypt.hash(parola.trim(), SALT_ROUNDS);
+
       await query(
         `UPDATE dbo.utilizatori
             SET nume     = @nume,
@@ -170,9 +182,9 @@ router.put("/utilizatori/:id", async (req, res) => {
             .input("rol", sql.VarChar(50), rol)
             .input("username", sql.VarChar(50), username)
             .input("email", sql.VarChar(100), email)
-            .input("parola", sql.VarChar(100), parola)
+            .input("parola", sql.VarChar(255), hash)       // ← new bcrypt
             .input("status", sql.VarChar(20), status),
-      )
+      );
     } else {
       await query(
         `UPDATE dbo.utilizatori
@@ -192,15 +204,16 @@ router.put("/utilizatori/:id", async (req, res) => {
             .input("username", sql.VarChar(50), username)
             .input("email", sql.VarChar(100), email)
             .input("status", sql.VarChar(20), status),
-      )
+      );
     }
 
-    res.sendStatus(204)
+    res.sendStatus(204);
   } catch (e) {
-    console.error(e)
-    res.status(500).send("DB error")
+    console.error(e);
+    res.status(500).send("DB error");
   }
-})
+});
+
 
 /* delete user */
 router.delete("/utilizatori/:id", async (req, res) => {
@@ -841,27 +854,37 @@ router.get("/utilizatori/:id", async (req, res) => {
 })
 
 router.post("/login", async (req, res) => {
-  const { email: userRaw, password } = req.body
-  if (!userRaw || !password) return res.status(400).send("Missing fields")
+  const { email: userRaw, password } = req.body;
+  if (!userRaw || !password) return res.status(400).send("Missing fields");
 
   try {
+    // 🔸  Look user up by email OR username – no password in the WHERE clause
     const rows = await query(
-      `SELECT ID_utilizator AS id,
-              LOWER(email) AS email,
-              nume, prenume, rol
+      `SELECT ID_utilizator        AS id,
+              LOWER(email)         AS email,
+              nume, prenume, rol,
+              parola               -- bcrypt hash
          FROM dbo.utilizatori
-        WHERE (LOWER(email)=@u OR LOWER(username)=@u)
-          AND  LTRIM(RTRIM(parola))=@p`,
-      (r) => r.input("u", sql.VarChar(255), userRaw.trim().toLowerCase()).input("p", sql.VarChar(255), password.trim()),
-    )
-    if (!rows.length) return res.status(401).send("Invalid credentials")
-    res.json({ user: rows[0] })
-  } catch (e) {
-    console.error(e)
-    res.status(500).send("DB error")
-  }
-})
+        WHERE LOWER(email)    = @u
+           OR LOWER(username) = @u`,
+      (r) => r.input("u", sql.VarChar(255), userRaw.trim().toLowerCase()),
+    );
 
+    if (!rows.length) return res.status(401).send("Invalid credentials");
+
+    const user = rows[0];
+
+    // 🔸  Compare candidate password with stored bcrypt hash
+    const ok = await bcrypt.compare(password.trim(), user.parola);
+    if (!ok) return res.status(401).send("Invalid credentials");
+
+    delete user.parola;            // never leak the hash
+    res.json({ user });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("DB error");
+  }
+});
 /**
  * Primită de robot când o comandă dă eroare.
  * Body JSON: { idComanda: 123, descriere?: "mesaj opţional" }
