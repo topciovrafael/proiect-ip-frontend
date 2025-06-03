@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Edit,
@@ -103,14 +103,14 @@ export default function PatientsPage() {
 
   /* ───────── render ───────── */
   return (
-    <div className="min-h-screen bg-gray-900 p-6 text-gray-200">
+    <div className="min-h-screen bg-gray-50 p-6 text-gray-900">
       <h1 className="mb-6 text-2xl font-bold">Pacienti</h1>
 
       {/* search */}
       <div className="relative mb-6 w-full max-w-md">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
         <input
-          className="w-full rounded-md border border-gray-700 bg-gray-800 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:ring-blue-500"
           placeholder="Search…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -119,29 +119,29 @@ export default function PatientsPage() {
 
       {/* list */}
       {loading ? (
-        <div className="flex items-center gap-2 text-gray-400">
+        <div className="flex items-center gap-2 text-gray-600">
           <Loader2 className="h-5 w-5 animate-spin" /> Loading…
         </div>
       ) : error ? (
-        <p className="text-red-400">{error}</p>
+        <p className="text-red-600">{error}</p>
       ) : (
-        <div className="rounded border border-gray-800 bg-gray-950">
-          <div className="border-b border-gray-800 px-6 py-4">
+        <div className="rounded border border-gray-300 bg-white">
+          <div className="border-b border-gray-200 px-6 py-4">
             <h2 className="font-semibold">Patient List</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-800 text-xs uppercase text-gray-400">
+                <tr className="bg-gray-100 text-xs uppercase text-gray-600">
                   <th className="px-6 py-3 text-left">ID</th>
                   <th className="px-6 py-3 text-left">Nume / Prenume</th>
                   <th className="px-6 py-3 text-left">Salon / Pat</th>
                   <th className="px-6 py-3 text-left">Actiuni</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
+              <tbody className="divide-y divide-gray-200">
                 {filtered.map((p) => (
-                  <tr key={p.id} className="hover:bg-gray-900">
+                  <tr key={p.id} className="hover:bg-gray-50">
                     <td className="px-6 py-3 font-medium">{p.id}</td>
                     <td className="px-6 py-3">
                       {p.nume} {p.prenume}
@@ -151,14 +151,14 @@ export default function PatientsPage() {
                       <button
                         title="View"
                         onClick={() => setView(p)}
-                        className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                        className="rounded p-1 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
                       >
                         <FileText className="h-4 w-4" />
                       </button>
                       <button
                         title="Edit"
                         onClick={() => setEdit({ ...p })}
-                        className="ml-2 rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                        className="ml-2 rounded p-1 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
@@ -167,7 +167,7 @@ export default function PatientsPage() {
                       <button
                         title="Delete"
                         onClick={() => setAskDel(p)}
-                        className="ml-2 rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-red-500"
+                        className="ml-2 rounded p-1 text-gray-600 hover:bg-gray-200 hover:text-red-500"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button> */}
@@ -190,14 +190,14 @@ export default function PatientsPage() {
       {/* ───────── view details modal ───────── */}
       {view && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-xl rounded-lg bg-gray-900 p-6">
+          <div className="w-full max-w-xl rounded-lg bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold">
                 Pacient #{view.id} – {view.nume} {view.prenume}
               </h2>
               <button
                 onClick={() => setView(null)}
-                className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                className="rounded p-1 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -205,19 +205,19 @@ export default function PatientsPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm text-gray-400">CNP</p>
+                <p className="text-sm text-gray-600">CNP</p>
                 <p>{view.CNP}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Telefon</p>
+                <p className="text-sm text-gray-600">Telefon</p>
                 <p>{view.telefon ?? "-"}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Adresă</p>
+                <p className="text-sm text-gray-600">Adresă</p>
                 <p>{view.adresa ?? "-"}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Salon / Pat</p>
+                <p className="text-sm text-gray-600">Salon / Pat</p>
                 <p>{room(view)}</p>
               </div>
             </div>
@@ -228,12 +228,12 @@ export default function PatientsPage() {
       {/* ───────── edit modal ───────── */}
       {edit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-xl rounded-lg bg-gray-900 p-6">
+          <div className="w-full max-w-xl rounded-lg bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold">Editeaza pacient #{edit.id}</h2>
               <button
                 onClick={() => setEdit(null)}
-                className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                className="rounded p-1 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -244,13 +244,13 @@ export default function PatientsPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 {(["nume", "prenume"] as const).map((k) => (
                   <div key={k}>
-                    <label className="block text-sm capitalize text-gray-400">
+                    <label className="block text-sm capitalize text-gray-700">
                       {k} <span className="text-red-500">*</span>
                     </label>
                     <input
                       className={`w-full rounded border ${
-                        fieldErr[k] ? "border-red-500" : "border-gray-700"
-                      } bg-gray-800 p-2`}
+                        fieldErr[k] ? "border-red-500" : "border-gray-300"
+                      } bg-white p-2`}
                       value={edit[k]}
                       onChange={(e) =>
                         setEdit({ ...edit, [k]: e.target.value })
@@ -264,13 +264,13 @@ export default function PatientsPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400">
+                <label className="block text-sm text-gray-700">
                   CNP <span className="text-red-500">*</span>
                 </label>
                 <input
                   className={`w-full rounded border ${
-                    fieldErr.CNP ? "border-red-500" : "border-gray-700"
-                  } bg-gray-800 p-2`}
+                    fieldErr.CNP ? "border-red-500" : "border-gray-300"
+                  } bg-white p-2`}
                   maxLength={13}
                   value={edit.CNP}
                   onChange={(e) => setEdit({ ...edit, CNP: e.target.value })}
@@ -281,9 +281,9 @@ export default function PatientsPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400">Adresă</label>
+                <label className="block text-sm text-gray-700">Adresă</label>
                 <input
-                  className="w-full rounded border border-gray-700 bg-gray-800 p-2"
+                  className="w-full rounded border border-gray-300 bg-white p-2"
                   value={edit.adresa ?? ""}
                   onChange={(e) => setEdit({ ...edit, adresa: e.target.value })}
                 />
@@ -291,11 +291,11 @@ export default function PatientsPage() {
 
               <div className="grid gap-4 md:grid-cols-3">
                 <div>
-                  <label className="block text-sm text-gray-400">Telefon</label>
+                  <label className="block text-sm text-gray-700">Telefon</label>
                   <input
                     className={`w-full rounded border ${
-                      fieldErr.telefon ? "border-red-500" : "border-gray-700"
-                    } bg-gray-800 p-2`}
+                      fieldErr.telefon ? "border-red-500" : "border-gray-300"
+                    } bg-white p-2`}
                     value={edit.telefon ?? ""}
                     onChange={(e) =>
                       setEdit({ ...edit, telefon: e.target.value })
@@ -309,9 +309,9 @@ export default function PatientsPage() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400">Salon</label>
+                  <label className="block text-sm text-gray-700">Salon</label>
                   <input
-                    className="w-full rounded border border-gray-700 bg-gray-800 p-2"
+                    className="w-full rounded border border-gray-300 bg-white p-2"
                     value={edit.salon ?? ""}
                     onChange={(e) =>
                       setEdit({ ...edit, salon: e.target.value })
@@ -319,9 +319,9 @@ export default function PatientsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400">Pat</label>
+                  <label className="block text-sm text-gray-700">Pat</label>
                   <input
-                    className="w-full rounded border border-gray-700 bg-gray-800 p-2"
+                    className="w-full rounded border border-gray-300 bg-white p-2"
                     value={edit.pat ?? ""}
                     onChange={(e) => setEdit({ ...edit, pat: e.target.value })}
                   />
@@ -336,7 +336,7 @@ export default function PatientsPage() {
             <div className="mt-6 flex justify-end gap-2">
               <button
                 onClick={() => setEdit(null)}
-                className="rounded border border-gray-700 bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700"
+                className="rounded border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50"
               >
                 Cancel
               </button>

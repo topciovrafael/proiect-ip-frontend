@@ -5,15 +5,15 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-// Simple custom components using only Tailwind - Dark Mode
+// Simple custom components using only Tailwind - Light Mode
 const Card: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="bg-gray-900 rounded-lg shadow-lg border border-gray-800 border-t-4 border-t-blue-600">
+  <div className="bg-white rounded-lg shadow-lg border border-gray-300 border-t-4 border-t-blue-600">
     {children}
   </div>
 );
 
 const CardHeader: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="p-6 border-b border-gray-800">{children}</div>
+  <div className="p-6 border-b border-gray-200">{children}</div>
 );
 
 const CardContent: React.FC<React.PropsWithChildren> = ({ children }) => (
@@ -21,7 +21,7 @@ const CardContent: React.FC<React.PropsWithChildren> = ({ children }) => (
 );
 
 const CardFooter: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="px-6 py-4 bg-gray-950 rounded-b-lg flex justify-end">
+  <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end">
     {children}
   </div>
 );
@@ -34,8 +34,8 @@ const Button: React.FC<
   <button
     className={`px-4 py-2 rounded-md font-medium transition-colors ${
       variant === "primary"
-        ? "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-800"
-        : "border border-gray-600 bg-gray-800 hover:bg-gray-700 text-gray-200 disabled:bg-gray-900"
+        ? "bg-blue-600 hover:bg-blue-700 text-black disabled:bg-blue-400"
+        : "border border-gray-400 bg-white hover:bg-gray-50 text-gray-700 disabled:bg-gray-100"
     } disabled:cursor-not-allowed ${className}`}
     {...props}
   >
@@ -44,7 +44,7 @@ const Button: React.FC<
 );
 
 const Alert: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="bg-red-900/30 border-l-4 border-red-600 p-4 text-red-200 animate-[fadeIn_0.3s_ease-in-out]">
+  <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-800 animate-[fadeIn_0.3s_ease-in-out]">
     {children}
   </div>
 );
@@ -285,14 +285,14 @@ const AddPatientPage: React.FC = () => {
   };
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white flex items-center justify-center py-10 px-4">
+    <main className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center py-10 px-4">
       <div className="w-full max-w-2xl">
         <Card>
           <CardHeader>
             <div className="flex items-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-blue-500"
+                className="h-6 w-6 text-blue-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -304,11 +304,11 @@ const AddPatientPage: React.FC = () => {
                   d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
                 />
               </svg>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-bold text-gray-900">
                 Adaugare Pacient
               </h1>
             </div>
-            <p className="text-gray-400 mt-1">
+            <p className="text-gray-600 mt-1">
               Adauga un nou pacient in sistem.
             </p>
           </CardHeader>
@@ -324,7 +324,7 @@ const AddPatientPage: React.FC = () => {
                     <div key={f.name} className="space-y-2">
                       <label
                         htmlFor={f.name}
-                        className="block text-sm font-medium text-gray-300"
+                        className="block text-sm font-medium text-gray-700"
                       >
                         {f.label}{" "}
                         {f.required && <span className="text-red-500">*</span>}
@@ -336,8 +336,8 @@ const AddPatientPage: React.FC = () => {
                         required={f.required}
                         onChange={handleChange}
                         className={`w-full rounded-md border ${
-                          errors[f.name] ? "border-red-500" : "border-gray-700"
-                        } bg-gray-800 p-2 text-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all`}
+                          errors[f.name] ? "border-red-500" : "border-gray-300"
+                        } bg-white p-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all`}
                       />
                       {errors[f.name] && (
                         <p className="text-sm text-red-500 mt-1">
@@ -351,7 +351,7 @@ const AddPatientPage: React.FC = () => {
                 <div className="space-y-2">
                   <label
                     htmlFor="CNP"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-gray-700"
                   >
                     CNP <span className="text-red-500">*</span>
                   </label>
@@ -362,8 +362,8 @@ const AddPatientPage: React.FC = () => {
                     required={true}
                     onChange={handleChange}
                     className={`w-full rounded-md border ${
-                      errors.CNP ? "border-red-500" : "border-gray-700"
-                    } bg-gray-800 p-2 text-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all`}
+                      errors.CNP ? "border-red-500" : "border-gray-300"
+                    } bg-white p-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all`}
                     placeholder="13 cifre (ex: 1990101123456)"
                   />
                   {errors.CNP && (
@@ -374,7 +374,7 @@ const AddPatientPage: React.FC = () => {
                 <div className="space-y-2">
                   <label
                     htmlFor="adresa"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-gray-700"
                   >
                     Adresă
                   </label>
@@ -383,7 +383,7 @@ const AddPatientPage: React.FC = () => {
                     name="adresa"
                     value={form.adresa}
                     onChange={handleChange}
-                    className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all"
+                    className="w-full rounded-md border border-gray-300 bg-white p-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all"
                   />
                 </div>
 
@@ -391,7 +391,7 @@ const AddPatientPage: React.FC = () => {
                   <div className="space-y-2">
                     <label
                       htmlFor="telefon"
-                      className="block text-sm font-medium text-gray-300"
+                      className="block text-sm font-medium text-gray-700"
                     >
                       Telefon
                     </label>
@@ -401,8 +401,8 @@ const AddPatientPage: React.FC = () => {
                       value={form.telefon}
                       onChange={handleChange}
                       className={`w-full rounded-md border ${
-                        errors.telefon ? "border-red-500" : "border-gray-700"
-                      } bg-gray-800 p-2 text-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all`}
+                        errors.telefon ? "border-red-500" : "border-gray-300"
+                      } bg-white p-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all`}
                       placeholder="10 cifre (ex: 0728440737)"
                     />
                     {errors.telefon && (
@@ -415,7 +415,7 @@ const AddPatientPage: React.FC = () => {
                   <div className="space-y-2">
                     <label
                       htmlFor="salon"
-                      className="block text-sm font-medium text-gray-300"
+                      className="block text-sm font-medium text-gray-700"
                     >
                       Salon
                     </label>
@@ -424,7 +424,7 @@ const AddPatientPage: React.FC = () => {
                       name="salon"
                       value={form.salon}
                       onChange={handleChange}
-                      className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all"
+                      className="w-full rounded-md border border-gray-300 bg-white p-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all"
                     />
                   </div>
                 </div>
@@ -432,7 +432,7 @@ const AddPatientPage: React.FC = () => {
                 <div className="space-y-2">
                   <label
                     htmlFor="pat"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-gray-700"
                   >
                     Pat
                   </label>
@@ -441,7 +441,7 @@ const AddPatientPage: React.FC = () => {
                     name="pat"
                     value={form.pat}
                     onChange={handleChange}
-                    className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all"
+                    className="w-full rounded-md border border-gray-300 bg-white p-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all"
                   />
                 </div>
 
@@ -476,7 +476,7 @@ const AddPatientPage: React.FC = () => {
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-black"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"

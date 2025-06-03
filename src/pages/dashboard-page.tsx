@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import SquareCard from "../components/SquareCard";
 import type { User } from "../App";
 
@@ -34,14 +34,14 @@ const DashboardPage: React.FC<Props> = ({ user }) => {
   const squares = roleMap[user.rol] ?? [];
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8 dark:bg-gray-900">
-      <h1 className="mb-6 text-2xl font-bold text-gray-800 dark:text-gray-100">
+    <main className="min-h-screen bg-white p-8">
+      <h1 className="mb-6 text-2xl font-bold text-gray-800">
         Bine ai venit, {user.nume} {user.prenume}
       </h1>
 
       {squares.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-400">
-          Nu există pagini definite pentru rolul „{user.rol}”.
+        <p className="text-gray-600">
+          Nu există pagini definite pentru rolul „{user.rol}".
         </p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
