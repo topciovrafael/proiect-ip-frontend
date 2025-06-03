@@ -23,8 +23,20 @@ interface User {
   username: string;
   email: string;
   parola: string;
-  status: string;
+  status: string; // expected to be lowercase ("activ" | "inactiv")
 }
+
+/**
+ * Helper to normalize status strings and keep one single source of truth (lower-case).
+ */
+const normalizeStatus = (s: string | undefined | null) =>
+  (s ?? "").toLowerCase();
+
+/**
+ * Helper to make the first letter upper-case – used only for displaying the badge label.
+ */
+const formatStatus = (s: string) =>
+  s.length ? `${s[0].toUpperCase()}${s.slice(1).toLowerCase()}` : s;
 
 const UserAdministration = () => {
   /* ────────── state ────────── */
@@ -45,7 +57,7 @@ const UserAdministration = () => {
     username: "",
     email: "",
     parola: "",
-    status: "Activ",
+    status: "activ", // 👈 lower-case is now the single accepted value internally
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -59,7 +71,7 @@ const UserAdministration = () => {
       username: "",
       email: "",
       parola: "",
-      status: "Activ",
+      status: "activ",
     });
 
   /* ────────── fetch users on mount ────────── */
@@ -74,7 +86,14 @@ const UserAdministration = () => {
       const response = await fetch("/api/utilizatori");
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-      setUsers(await response.json());
+      const data: User[] = await response.json();
+      // normalise status field from the backend just once here so the rest of the code can
+      // happily assume lower-case values
+      const normalised = data.map((u) => ({
+        ...u,
+        status: normalizeStatus(u.status),
+      }));
+      setUsers(normalised);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch users");
       console.error("Error fetching users:", err);
@@ -94,7 +113,11 @@ const UserAdministration = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      // ensure status is always stored lower-case
+      [name]: name === "status" ? normalizeStatus(value) : value,
+    }));
 
     if (formErrors[name]) {
       setFormErrors((prev) => {
@@ -136,7 +159,10 @@ const UserAdministration = () => {
       const resp = await fetch("/api/utilizatori", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          status: normalizeStatus(formData.status), // make sure we send lowercase too
+        }),
       });
       if (!resp.ok) throw new Error(await resp.text());
       await fetchUsers();
@@ -160,9 +186,10 @@ const UserAdministration = () => {
     setFormErrors(errors);
     if (Object.keys(errors).length) return;
 
-    /*  Don’t overwrite with an empty password:  */
+    /* Don’t overwrite with an empty password: */
     const payload: Partial<User> = { ...formData };
     if (!payload.parola?.trim()) delete payload.parola;
+    payload.status = normalizeStatus(payload.status);
 
     setSaving(true);
     try {
@@ -207,11 +234,11 @@ const UserAdministration = () => {
       username: u.username,
       email: u.email,
       parola: "",
-      status: u.status,
+      status: normalizeStatus(u.status), // 👈 always lower-case
     });
   };
 
-  /* ────────── JSX (all styles unchanged) ────────── */
+  /* ────────── JSX (all styles unchanged except status logic) ────────── */
   return (
     <div className="min-h-screen bg-gray-50 p-6 text-gray-900">
       <h1 className="mb-6 text-2xl font-bold">Administrare Utilizatori</h1>
@@ -299,12 +326,12 @@ const UserAdministration = () => {
                     <td className="px-6 py-3">
                       <span
                         className={`inline-block rounded-full px-2 py-1 text-xs ${
-                          u.status === "activ"
+                          normalizeStatus(u.status) === "activ"
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {u.status}
+                        {formatStatus(u.status)}
                       </span>
                     </td>
                     <td className="px-6 py-3">
