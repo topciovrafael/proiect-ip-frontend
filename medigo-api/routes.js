@@ -3,6 +3,7 @@ import { Router } from "express"
 import sql from "mssql"
 import { query } from "./db.js"
 import bcrypt from "bcrypt";  
+import axios from "axios"; // Add axios for HTTP requests
 
 const SALT_ROUNDS = 12;  
 
@@ -610,6 +611,19 @@ router.post("/prescriptions", async (req, res) => {
     const prescriptionId = prescriptionResult[0].ID_prescriptie
     console.log(`Created prescription ID: ${prescriptionId}`)
 
+    // Get patient data for robot command
+    const patientData = await query(
+      `SELECT salon, pat FROM dbo.pacienti WHERE ID_pacient = @ID_pacient`,
+      (r) => r.input("ID_pacient", sql.Int, ID_pacient),
+    )
+
+    if (!patientData.length) {
+      console.error(`Patient with ID ${ID_pacient} not found`)
+      return res.status(404).send(`Pacientul cu ID ${ID_pacient} nu există`)
+    }
+
+    const patient = patientData[0]
+
     // 2. Process each medication
     for (const med of medications) {
       console.log(`Processing medication ID: ${med.ID_medicament}`)
@@ -626,7 +640,7 @@ router.post("/prescriptions", async (req, res) => {
 
       // Check if enough stock is available
       const stockCheck = await query(
-        `SELECT stoc_curent FROM dbo.medicamente WHERE ID_medicament = @ID_medicament`,
+        `SELECT stoc_curent, RFID FROM dbo.medicamente WHERE ID_medicament = @ID_medicament`,
         (r) => r.input("ID_medicament", sql.Int, med.ID_medicament),
       )
 
@@ -636,6 +650,7 @@ router.post("/prescriptions", async (req, res) => {
       }
 
       const currentStock = stockCheck[0].stoc_curent
+      const medicationRFID = stockCheck[0].RFID
       console.log(`Current stock for medication ${med.ID_medicament}: ${currentStock}`)
 
       if (currentStock < stockReduction) {
@@ -671,6 +686,30 @@ router.post("/prescriptions", async (req, res) => {
          WHERE ID_medicament = @ID_medicament`,
         (r) => r.input("ID_medicament", sql.Int, med.ID_medicament).input("stockReduction", sql.Int, stockReduction),
       )
+
+      // Send HTTP POST to robot for each medication
+      try {
+        const robotCommand = {
+          salon: patient.salon || "1",
+          pat: patient.pat || "1", 
+          rfid: medicationRFID || "rfid"
+        }
+
+        console.log(`Sending robot command for medication ${med.ID_medicament}:`, robotCommand)
+        
+        const robotResponse = await axios.post(`http://[ip_robot]/comanda`, robotCommand, {
+          timeout: 5000, // 5 second timeout
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+
+        console.log(`Robot command sent successfully for medication ${med.ID_medicament}:`, robotResponse.status)
+      } catch (robotError) {
+        console.error(`Failed to send robot command for medication ${med.ID_medicament}:`, robotError.message)
+        // Continue with prescription creation even if robot command fails
+        // You might want to log this error or handle it differently based on your requirements
+      }
     }
 
     console.log(`Prescription ${prescriptionId} created successfully`)
