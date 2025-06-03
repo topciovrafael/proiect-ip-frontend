@@ -35,10 +35,17 @@ const DashboardPage: React.FC<Props> = ({ user }) => {
 
   return (
     <main className="min-h-screen bg-white p-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-800">
-        Bine ai venit, {user.nume} {user.prenume}
-      </h1>
+      <div>
+        <img
+          src="src/assets/medigo.png"
+          alt="Medigo Logo"
+          className="mx-auto mb-4 h-30 w-auto"
+        />
 
+        <h1 className="mb-6 text-2xl font-bold text-gray-800">
+          Bine ai venit, {user.nume} {user.prenume}
+        </h1>
+      </div>
       {squares.length === 0 ? (
         <p className="text-gray-600">
           Nu există pagini definite pentru rolul „{user.rol}".

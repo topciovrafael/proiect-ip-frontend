@@ -108,26 +108,33 @@ const TransportHistoryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 text-gray-900">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Istoric Transporturi</h1>
-          <p className="text-gray-600">
-            Vizualizarea istoricului transporturilor de medicamente
-          </p>
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6 text-gray-900">
+      {/* Header - Responsive layout */}
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold">
+              Istoric Transporturi
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
+              Vizualizarea istoricului transporturilor de medicamente
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <button
+              onClick={fetchTransports}
+              className="inline-flex items-center justify-center gap-2 rounded bg-blue-600 px-3 sm:px-4 py-2 text-sm font-medium text-black hover:bg-blue-700 w-full sm:w-auto"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Actualizează</span>
+            </button>
+          </div>
         </div>
-        <button
-          onClick={fetchTransports}
-          className="inline-flex items-center gap-2 rounded bg-blue-600 px-4 py-2 text-sm font-medium text-black hover:bg-blue-700"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Actualizează
-        </button>
       </div>
 
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative w-full max-w-md">
+      {/* Search - Responsive width */}
+      <div className="mb-4 sm:mb-6">
+        <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
             className="w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:ring-blue-500"
@@ -140,61 +147,70 @@ const TransportHistoryPage = () => {
 
       {/* Error message */}
       {error && (
-        <div className="mb-6 rounded-md bg-red-50 border border-red-200 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
+        <div className="mb-4 sm:mb-6 rounded-md bg-red-50 border border-red-200 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-800 leading-relaxed">{error}</p>
           </div>
         </div>
       )}
 
       {/* Transport history list */}
       {loading ? (
-        <div className="flex items-center gap-2 text-gray-600">
-          <Loader2 className="h-5 w-5 animate-spin" /> Se încarcă...
+        <div className="flex items-center justify-center gap-2 text-gray-600 py-8">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Se încarcă...</span>
         </div>
       ) : (
-        <div className="rounded border border-gray-300 bg-white">
-          <div className="border-b border-gray-200 px-6 py-4">
-            <h2 className="font-semibold">Lista Transporturi</h2>
+        <div className="rounded border border-gray-300 bg-white overflow-hidden">
+          <div className="border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
+            <h2 className="font-semibold text-sm sm:text-base">
+              Lista Transporturi
+            </h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-100 text-xs uppercase text-gray-600">
-                  <th className="px-6 py-3 text-left">ID Transport</th>
-                  <th className="px-6 py-3 text-left">ID Medicament</th>
-                  <th className="px-6 py-3 text-left">ID Pacient</th>
-                  <th className="px-6 py-3 text-left">Data și Ora</th>
-                  <th className="px-6 py-3 text-left">Status</th>
+                  <th className="px-3 sm:px-6 py-3 text-left whitespace-nowrap">
+                    ID Transport
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-left whitespace-nowrap">
+                    ID Medicament
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-left whitespace-nowrap">
+                    ID Pacient
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-left whitespace-nowrap">
+                    Data și Ora
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-left whitespace-nowrap">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredTransports.map((transport) => (
                   <tr key={transport.ID_transport} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 font-medium">
+                    <td className="px-3 sm:px-6 py-3 font-medium whitespace-nowrap">
                       {transport.ID_transport}
                     </td>
-                    <td className="px-6 py-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
+                    <td className="px-3 sm:px-6 py-3">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-blue-100 text-blue-800 whitespace-nowrap">
                         <Pill className="w-3 h-3" />
                         {transport.ID_medicament}
                       </span>
                     </td>
-                    <td className="px-6 py-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-purple-100 text-purple-800">
+                    <td className="px-3 sm:px-6 py-3">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-purple-100 text-purple-800 whitespace-nowrap">
                         <User className="w-3 h-3" />
                         {transport.ID_pacient}
                       </span>
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-3 sm:px-6 py-3 whitespace-nowrap text-xs sm:text-sm">
                       {formatDateTime(transport.data_ora)}
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-3 sm:px-6 py-3">
                       {getStatusBadge(transport.status)}
                     </td>
                   </tr>
@@ -212,26 +228,28 @@ const TransportHistoryPage = () => {
         </div>
       )}
 
-      {/* Summary */}
+      {/* Summary - Responsive grid */}
       {filteredTransports.length > 0 && (
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <div className="rounded border border-gray-300 bg-white p-4">
+        <div className="mt-4 sm:mt-6 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
+          <div className="rounded border border-gray-300 bg-white p-3 sm:p-4">
             <div className="flex items-center gap-2">
-              <Truck className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-600">Total transporturi</p>
-                <p className="text-lg font-semibold">
+              <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600">
+                  Total transporturi
+                </p>
+                <p className="text-base sm:text-lg font-semibold">
                   {filteredTransports.length}
                 </p>
               </div>
             </div>
           </div>
-          <div className="rounded border border-gray-300 bg-white p-4">
+          <div className="rounded border border-gray-300 bg-white p-3 sm:p-4">
             <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">Finalizate</p>
-                <p className="text-lg font-semibold">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600">Finalizate</p>
+                <p className="text-base sm:text-lg font-semibold">
                   {
                     filteredTransports.filter(
                       (t) => t.status.toLowerCase() === "finalizat"
@@ -241,12 +259,12 @@ const TransportHistoryPage = () => {
               </div>
             </div>
           </div>
-          <div className="rounded border border-gray-300 bg-white p-4">
+          <div className="rounded border border-gray-300 bg-white p-3 sm:p-4">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-yellow-600" />
-              <div>
-                <p className="text-sm text-gray-600">În curs</p>
-                <p className="text-lg font-semibold">
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600">În curs</p>
+                <p className="text-base sm:text-lg font-semibold">
                   {
                     filteredTransports.filter(
                       (t) =>

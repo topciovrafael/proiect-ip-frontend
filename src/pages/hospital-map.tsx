@@ -11,11 +11,6 @@ import {
   MapPin,
 } from "lucide-react";
 
-// interface HospitalMapData {
-//   nr1: string;
-//   nr2: string;
-// }
-
 const HospitalMap = () => {
   const [matrix, setMatrix] = useState<boolean[][]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,25 +151,29 @@ const HospitalMap = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 text-gray-900">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Harta Spital</h1>
-          <p className="text-gray-600">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6 text-gray-900">
+      {/* Header - Responsive layout */}
+      <div className="mb-4 sm:mb-6">
+        <div className="mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold">Harta Spital</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             Vizualizarea și editarea hărții spitalului
           </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Buttons - Stack on mobile, inline on larger screens */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
           <button
             onClick={fetchMapData}
-            className="inline-flex items-center gap-2 rounded bg-gray-600 px-4 py-2 text-sm font-medium text-black hover:bg-gray-700"
+            className="inline-flex items-center justify-center gap-2 rounded bg-gray-600 px-3 py-2 text-sm font-medium text-black hover:bg-gray-700 w-full sm:w-auto"
           >
             <RefreshCw className="w-4 h-4" />
-            Actualizează
+            <span className="sm:inline">Actualizează</span>
           </button>
+
           <button
             onClick={() => setEditMode(!editMode)}
-            className={`inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-medium text-black ${
+            className={`inline-flex items-center justify-center gap-2 rounded px-3 py-2 text-sm font-medium text-black w-full sm:w-auto ${
               editMode
                 ? "bg-orange-600 hover:bg-orange-700"
                 : "bg-blue-600 hover:bg-blue-700"
@@ -185,21 +184,24 @@ const HospitalMap = () => {
             ) : (
               <Edit3 className="w-4 h-4" />
             )}
-            {editMode ? "Vizualizare" : "Editare"}
+            <span>{editMode ? "Vizualizare" : "Editare"}</span>
           </button>
+
           {editMode && (
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded bg-green-600 px-4 py-2 text-sm font-medium text-black hover:bg-green-700 disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded bg-green-600 px-3 py-2 text-sm font-medium text-black hover:bg-green-700 disabled:opacity-70 w-full sm:w-auto"
             >
               {saving ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Se salvează...
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Se salvează...</span>
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" /> Salvează
+                  <Save className="w-4 h-4" />
+                  <span>Salvează</span>
                 </>
               )}
             </button>
@@ -207,14 +209,13 @@ const HospitalMap = () => {
         </div>
       </div>
 
-      {/* Edit mode indicator */}
+      {/* Edit mode indicator - Better mobile layout */}
       {editMode && (
         <div className="mb-4 rounded-md bg-orange-50 border border-orange-200 p-3">
-          <div className="flex items-center gap-2">
-            <Edit3 className="h-4 w-4 text-orange-600" />
-            <p className="text-sm text-orange-800">
-              Mod editare activ. Faceți clic pe celule pentru a le
-              activa/dezactiva.
+          <div className="flex items-start gap-2">
+            <Edit3 className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-orange-800 leading-relaxed">
+              Mod editare activ. Atingeți celulele pentru a le activa/dezactiva.
             </p>
           </div>
         </div>
@@ -222,89 +223,104 @@ const HospitalMap = () => {
 
       {/* Error message */}
       {error && (
-        <div className="mb-6 rounded-md bg-red-50 border border-red-200 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
+        <div className="mb-4 sm:mb-6 rounded-md bg-red-50 border border-red-200 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-800 leading-relaxed">{error}</p>
           </div>
         </div>
       )}
 
       {/* Hospital Map Matrix */}
       {loading ? (
-        <div className="flex items-center gap-2 text-gray-600">
-          <Loader2 className="h-5 w-5 animate-spin" /> Se încarcă harta...
+        <div className="flex items-center gap-2 text-gray-600 justify-center py-8">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Se încarcă harta...</span>
         </div>
       ) : (
-        <div className="rounded border border-gray-300 bg-white p-6">
+        <div className="rounded border border-gray-300 bg-white p-3 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <MapPin className="w-5 h-5 text-blue-600" />
-            <h2 className="font-semibold">Harta Spital (16x16)</h2>
+            <h2 className="font-semibold text-sm sm:text-base">
+              Harta Spital (16x16)
+            </h2>
           </div>
 
-          <div className="flex justify-center">
-            <div className="grid grid-cols-16 gap-px bg-gray-400 p-px">
-              {matrix.map((row, rowIndex) =>
-                row.map((cell, colIndex) => (
-                  <div
-                    key={`${rowIndex}-${colIndex}`}
-                    className={`w-6 h-6 ${
-                      cell ? "bg-gray-800" : "bg-gray-200"
-                    } ${editMode ? "cursor-pointer hover:opacity-80" : ""}`}
-                    onClick={() => handleCellClick(rowIndex, colIndex)}
-                    title={`Poziția [${rowIndex + 1}, ${colIndex + 1}]`}
-                  />
-                ))
-              )}
+          {/* Responsive grid container */}
+          <div className="w-full overflow-x-auto">
+            <div className="flex justify-center min-w-fit">
+              <div className="inline-grid grid-cols-16 gap-0.5 sm:gap-px bg-gray-400 p-0.5 sm:p-px border border-gray-400 rounded">
+                {matrix.map((row, rowIndex) =>
+                  row.map((cell, colIndex) => (
+                    <div
+                      key={`${rowIndex}-${colIndex}`}
+                      className={`
+                        w-4 h-4 sm:w-6 sm:h-6 border border-gray-300
+                        ${cell ? "bg-gray-800" : "bg-gray-200"}
+                        ${
+                          editMode
+                            ? "cursor-pointer hover:opacity-80 active:scale-95"
+                            : ""
+                        }
+                        transition-all duration-150
+                      `}
+                      onClick={() => handleCellClick(rowIndex, colIndex)}
+                      title={`Poziția [${rowIndex + 1}, ${colIndex + 1}]`}
+                    />
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Legend */}
-          <div className="mt-6 flex justify-center">
-            <div className="flex items-center gap-6 text-sm">
+          {/* Legend - Responsive layout */}
+          <div className="mt-4 sm:mt-6 flex justify-center">
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 text-xs sm:text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-gray-200"></div>
+                <div className="w-4 h-4 bg-gray-200 border border-gray-300"></div>
                 <span className="text-gray-600">Liber (0)</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-gray-800"></div>
+                <div className="w-4 h-4 bg-gray-800 border border-gray-300"></div>
                 <span className="text-gray-600">Ocupat (1)</span>
               </div>
             </div>
           </div>
 
-          {/* Statistics */}
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <div className="rounded border border-gray-300 bg-gray-100 p-4">
+          {/* Statistics - Responsive grid */}
+          <div className="mt-4 sm:mt-6 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
+            <div className="rounded border border-gray-300 bg-gray-100 p-3 sm:p-4">
               <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-blue-600" />
-                <div>
-                  <p className="text-sm text-gray-600">Total celule</p>
-                  <p className="text-lg font-semibold">256</p>
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Total celule
+                  </p>
+                  <p className="text-base sm:text-lg font-semibold">256</p>
                 </div>
               </div>
             </div>
-            <div className="rounded border border-gray-300 bg-gray-100 p-4">
+            <div className="rounded border border-gray-300 bg-gray-100 p-3 sm:p-4">
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 bg-gray-800"></div>
-                <div>
-                  <p className="text-sm text-gray-600">Celule ocupate</p>
-                  <p className="text-lg font-semibold">
+                <div className="w-4 h-4 sm:w-5 sm:h-5 bg-gray-800 border border-gray-300 flex-shrink-0"></div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Celule ocupate
+                  </p>
+                  <p className="text-base sm:text-lg font-semibold">
                     {matrix.flat().filter(Boolean).length}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="rounded border border-gray-300 bg-gray-100 p-4">
+            <div className="rounded border border-gray-300 bg-gray-100 p-3 sm:p-4">
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 bg-gray-200"></div>
-                <div>
-                  <p className="text-sm text-gray-600">Celule libere</p>
-                  <p className="text-lg font-semibold">
+                <div className="w-4 h-4 sm:w-5 sm:h-5 bg-gray-200 border border-gray-300 flex-shrink-0"></div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Celule libere
+                  </p>
+                  <p className="text-base sm:text-lg font-semibold">
                     {matrix.flat().filter((cell) => !cell).length}
                   </p>
                 </div>

@@ -40,6 +40,11 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
           <div className="p-8 sm:p-10">
             <div className="text-center mb-8">
+              <img
+                src="src/assets/medigo.png"
+                alt="Medigo Logo"
+                className="mx-auto mb-4 h-30 w-auto"
+              />
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Autentificare
               </h1>
