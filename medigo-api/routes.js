@@ -578,6 +578,20 @@ router.post("/prescriptions", async (req, res) => {
     if (!med.ID_medicament || med.doza < 100 || med.doza > 1000 || med.frecventa < 1 || med.frecventa > 30) {
       return res.status(400).send("Datele medicamentelor sunt invalide")
     }
+    // Insert into istoric_transporturi only for the first medication
+    if (medications.indexOf(med) === 0) {
+      await query(
+        `INSERT INTO dbo.istoric_transporturi
+          (ID_medicament, data_ora, status, ID_pacient)
+        VALUES
+          (@ID_medicament, SYSDATETIME(), @status, @ID_pacient)`,
+        (r) =>
+          r
+            .input("ID_medicament", sql.Int, med.ID_medicament)
+            .input("status", sql.VarChar(50), "in curs")
+            .input("ID_pacient", sql.Int, ID_pacient)
+      )
+    }
   }
 
   try {
@@ -602,6 +616,7 @@ router.post("/prescriptions", async (req, res) => {
        VALUES (@ID_pacient, @ID_medic, SYSDATETIME())`,
       (r) => r.input("ID_pacient", sql.Int, ID_pacient).input("ID_medic", sql.Int, ID_medic),
     )
+    
 
     if (!prescriptionResult || prescriptionResult.length === 0) {
       console.error("Failed to get prescription ID from insert")
@@ -697,7 +712,7 @@ router.post("/prescriptions", async (req, res) => {
 
         console.log(`Sending robot command for medication ${med.ID_medicament}:`, robotCommand)
         
-        const robotResponse = await axios.post(`http://[ip_robot]/comanda`, robotCommand, {
+        const robotResponse = await axios.post(`http://10.100.0.48/comanda`, robotCommand, { // ip_robot
           timeout: 5000, // 5 second timeout
           headers: {
             'Content-Type': 'application/json'
@@ -950,5 +965,32 @@ router.post("/robot/error", async (req, res) => {
     return res.status(500).send("DB error")
   }
 })
+
+
+router.post("/update-status", async (req, res) => {
+  const { status } = req.body;
+  if (!status) return res.status(400).send("Câmpul 'status' este obligatoriu");
+
+  try {
+    // Găsește ultimul transport introdus (cel mai mare ID_transport)
+    const rows = await query(
+      'SELECT TOP 1 ID_transport FROM dbo.istoric_transporturi ORDER BY ID_transport DESC'
+    );
+    if (!rows.length) return res.status(404).send("Nu există transporturi");
+
+    const lastId = rows[0].ID_transport;
+
+    // Actualizează statusul
+    await query(
+      'UPDATE dbo.istoric_transporturi SET status = @status WHERE ID_transport = @id',
+      (r) => r.input("status", sql.VarChar(50), status).input("id", sql.Int, lastId)
+    );
+
+    res.status(200).send("Status actualizat");
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("DB error");
+  }
+});
 
 export default router
