@@ -690,9 +690,9 @@ router.post("/prescriptions", async (req, res) => {
       // Send HTTP POST to robot for each medication
       try {
         const robotCommand = {
-          salon: patient.salon || "1",
-          pat: patient.pat || "1", 
-          rfid: medicationRFID || "rfid"
+          salon: String(patient.salon ?? "1"),
+          pat: String(patient.pat ?? "1"),
+          rfid: String(medicationRFID ?? "rfid"),
         }
 
         console.log(`Sending robot command for medication ${med.ID_medicament}:`, robotCommand)
