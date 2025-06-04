@@ -1,7 +1,7 @@
 import type React from "react";
 import SquareCard from "../components/SquareCard";
 import type { User } from "../App";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 interface Props {
   user: User;
