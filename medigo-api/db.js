@@ -1,7 +1,18 @@
 import sql from "mssql";
 import "dotenv/config";
 
-const pool = new sql.ConnectionPool("tcp:medigo.database.windows.net,1433;Database=medigo;Uid=admin1234;Pwd=Medigo1234;Encrypt=true;TrustServerCertificate=false;");
+const pool = new sql.ConnectionPool({
+  user: "admin1234",
+  password: "Medigo1234",
+  server: "medigo.database.windows.net", // do NOT include `tcp:` or port in this string
+  database: "medigo",
+  options: {
+    encrypt: true,
+    trustServerCertificate: false,
+  },
+  port: 1433,
+});
+
 const poolConnect = pool.connect();   // kicks off the initial handshake
 
 /**
