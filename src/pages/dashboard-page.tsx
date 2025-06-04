@@ -1,6 +1,7 @@
 import type React from "react";
 import SquareCard from "../components/SquareCard";
 import type { User } from "../App";
+import { Link } from "react-router-dom";
 
 interface Props {
   user: User;
@@ -31,6 +32,10 @@ const DashboardPage: React.FC<Props> = ({ user }) => {
     ],
   };
 
+  const handleLogout = () => {
+    window.location.reload();
+  };
+
   const squares = roleMap[user.rol] ?? [];
 
   return (
@@ -45,6 +50,12 @@ const DashboardPage: React.FC<Props> = ({ user }) => {
         <h1 className="mb-6 text-2xl font-bold text-gray-800">
           Bine ai venit, {user.nume} {user.prenume}
         </h1>
+        <button
+          onClick={handleLogout}
+          className="inline-flex items-center justify-center rounded-md w-[85px] h-[40px] px-8 py-4 text-lg font-medium text-blue-500 shadow-sm transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6"
+        >
+          Log out
+        </button>
       </div>
       {squares.length === 0 ? (
         <p className="text-gray-600">
