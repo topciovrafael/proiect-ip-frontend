@@ -21,7 +21,7 @@ const HospitalMap = () => {
   // Fetch map data on component mount
   useEffect(() => {
     fetchMapData();
-  }, []);
+  });
 
   // Fetch hospital map data from API
   const fetchMapData = async () => {
